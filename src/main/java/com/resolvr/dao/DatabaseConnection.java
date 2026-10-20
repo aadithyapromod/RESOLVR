@@ -1,22 +1,33 @@
-
 package com.resolvr.dao;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 public class DatabaseConnection {
 
-    private static final String URL =
-            "jdbc:mysql://localhost:3306/resolvr";
-
-    private static final String USER = "aadi";
-
-    // Replace this with your actual MySQL password
-    private static final String PASSWORD = "8943296569";
+    private static final String CONFIG_FILE = "db.properties";
 
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USER, PASSWORD);
+        Properties properties = new Properties();
+
+        try (FileInputStream input = new FileInputStream(CONFIG_FILE)) {
+            properties.load(input);
+        } catch (IOException e) {
+            throw new SQLException(
+                "Cannot read db.properties. Run from the RESOLVR project root.",
+                e
+            );
+        }
+
+        String url = properties.getProperty("db.url");
+        String username = properties.getProperty("db.username");
+        String password = properties.getProperty("db.password");
+
+        return DriverManager.getConnection(url, username, password);
     }
 
     public static void main(String[] args) {
@@ -28,3 +39,4 @@ public class DatabaseConnection {
         }
     }
 }
+

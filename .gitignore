@@ -3,3 +3,4 @@
 .DS_Store
 .env
 config.properties
+db.properties
