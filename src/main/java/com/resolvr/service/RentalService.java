@@ -1,0 +1,182 @@
+
+package com.resolvr.service;
+
+import com.resolvr.dao.CustomerDAO;
+import com.resolvr.dao.RentalDAO;
+import com.resolvr.dao.VehicleDAO;
+import com.resolvr.model.Customer;
+import com.resolvr.model.Rental;
+import com.resolvr.model.Vehicle;
+
+import java.sql.SQLException;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+
+public class RentalService {
+
+    private final RentalDAO rentalDAO;
+    private final VehicleDAO vehicleDAO;
+    private final CustomerDAO customerDAO;
+
+    public RentalService() {
+        this.rentalDAO = new RentalDAO();
+        this.vehicleDAO = new VehicleDAO();
+        this.customerDAO = new CustomerDAO();
+    }
+
+    // Create a rental after validating the booking
+    public boolean addRental(Rental rental) throws SQLException {
+
+        if (rental == null) {
+            throw new IllegalArgumentException(
+                    "Rental cannot be null."
+            );
+        }
+
+        if (rental.getCustomerId() <= 0
+                || rental.getVehicleId() <= 0) {
+            throw new IllegalArgumentException(
+                    "Valid customer and vehicle IDs are required."
+            );
+        }
+
+        if (rental.getStartDate() == null
+                || rental.getEndDate() == null) {
+            throw new IllegalArgumentException(
+                    "Start date and end date are required."
+            );
+        }
+
+        if (rental.getEndDate().before(rental.getStartDate())) {
+            throw new IllegalArgumentException(
+                    "End date cannot be before the start date."
+            );
+        }
+
+        // Verify that the customer exists
+        Customer customer =
+                customerDAO.getCustomerById(rental.getCustomerId());
+
+        if (customer == null) {
+            throw new IllegalArgumentException(
+                    "Customer does not exist."
+            );
+        }
+
+        // Find the requested vehicle
+        Vehicle selectedVehicle = null;
+
+        List<Vehicle> vehicles = vehicleDAO.getAllVehicles();
+
+        for (Vehicle vehicle : vehicles) {
+            if (vehicle.getVehicleId() == rental.getVehicleId()) {
+                selectedVehicle = vehicle;
+                break;
+            }
+        }
+
+        if (selectedVehicle == null) {
+            throw new IllegalArgumentException(
+                    "Vehicle does not exist."
+            );
+        }
+
+        if (!"AVAILABLE".equalsIgnoreCase(
+                selectedVehicle.getStatus())) {
+            throw new IllegalArgumentException(
+                    "Vehicle is not currently available."
+            );
+        }
+
+        // Check for overlapping bookings
+        List<Rental> existingRentals = rentalDAO.getAllRentals();
+
+        for (Rental existing : existingRentals) {
+
+            if (existing.getVehicleId() != rental.getVehicleId()) {
+                continue;
+            }
+
+            String status = existing.getStatus();
+
+            if (status != null &&
+                    (status.equalsIgnoreCase("CANCELLED")
+                    || status.equalsIgnoreCase("COMPLETED")
+                    || status.equalsIgnoreCase("RETURNED"))) {
+                continue;
+            }
+
+            boolean overlaps =
+                    !rental.getEndDate().before(existing.getStartDate())
+                    && !rental.getStartDate().after(existing.getEndDate());
+
+            if (overlaps) {
+                throw new IllegalArgumentException(
+                        "This vehicle already has a booking "
+                        + "during the selected dates."
+                );
+            }
+        }
+
+        // Calculate the rental cost
+        long days = ChronoUnit.DAYS.between(
+                rental.getStartDate().toLocalDate(),
+                rental.getEndDate().toLocalDate()
+        );
+
+        // Charge at least one day's rental
+        days = Math.max(days, 1);
+
+        double totalAmount =
+                days * selectedVehicle.getPricePerDay();
+
+        rental.setTotalAmount(totalAmount);
+
+        // New bookings start as BOOKED
+        rental.setStatus("BOOKED");
+
+        return rentalDAO.addRental(rental);
+    }
+
+    // Retrieve all rentals
+    public List<Rental> getAllRentals() throws SQLException {
+        return rentalDAO.getAllRentals();
+    }
+
+    // Retrieve one rental by ID
+    public Rental getRentalById(int rentalId) throws SQLException {
+
+        if (rentalId <= 0) {
+            throw new IllegalArgumentException(
+                    "Invalid rental ID."
+            );
+        }
+
+        return rentalDAO.getRentalById(rentalId);
+    }
+
+    // Update rental status
+    public boolean updateRentalStatus(int rentalId, String status)
+            throws SQLException {
+
+        if (rentalId <= 0) {
+            throw new IllegalArgumentException(
+                    "Invalid rental ID."
+            );
+        }
+
+        if (status == null ||
+                !(status.equalsIgnoreCase("BOOKED")
+                || status.equalsIgnoreCase("ACTIVE")
+                || status.equalsIgnoreCase("COMPLETED")
+                || status.equalsIgnoreCase("CANCELLED"))) {
+            throw new IllegalArgumentException(
+                    "Invalid rental status."
+            );
+        }
+
+        return rentalDAO.updateRentalStatus(
+                rentalId, status.toUpperCase()
+        );
+    }
+}
