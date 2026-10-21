@@ -1,4 +1,3 @@
-
 package com.resolvr;
 
 import com.resolvr.dao.VehicleDAO;
@@ -11,19 +10,6 @@ public class VehicleDAOTest {
         VehicleDAO vehicleDAO = new VehicleDAO();
 
         try {
-            Vehicle vehicle = new Vehicle(
-                "KL02AB1234",
-                "Honda Activa 125",
-                "Scooter",
-                800.00
-            );
-
-            boolean added = vehicleDAO.addVehicle(vehicle);
-
-            if (added) {
-                System.out.println("Vehicle added successfully!");
-            }
-
             System.out.println("\nVehicles in RESOLVR:");
 
             for (Vehicle v : vehicleDAO.getAllVehicles()) {
@@ -32,7 +18,7 @@ public class VehicleDAOTest {
                     v.getRegistrationNo() + " | " +
                     v.getModel() + " | " +
                     v.getCategory() + " | Rs." +
-                    v.getPricePerDay() + " | " +
+                    v.getPricePerHour() + "/hr | " +
                     v.getStatus()
                 );
             }
@@ -43,4 +29,3 @@ public class VehicleDAOTest {
         }
     }
 }
-

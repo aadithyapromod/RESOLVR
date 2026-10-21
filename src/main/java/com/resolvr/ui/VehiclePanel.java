@@ -1,4 +1,3 @@
-
 package com.resolvr.ui;
 
 import com.resolvr.model.Vehicle;
@@ -24,7 +23,7 @@ public class VehiclePanel extends JPanel {
     private final DefaultTableModel tableModel =
             new DefaultTableModel(new String[]{
                     "ID", "Registration", "Model",
-                    "Category", "Price/Day", "Status"
+                    "Category", "Price/Hour (₹)", "Status"
             }, 0) {
                 @Override
                 public boolean isCellEditable(int row, int col) {
@@ -50,7 +49,7 @@ public class VehiclePanel extends JPanel {
         form.add(model);
         form.add(new JLabel("Category"));
         form.add(category);
-        form.add(new JLabel("Daily price (₹)"));
+        form.add(new JLabel("Hourly price (₹)"));
         form.add(price);
 
         JButton add = new JButton("Add Vehicle");
@@ -101,10 +100,10 @@ public class VehiclePanel extends JPanel {
                 return;
             }
 
-            double dailyPrice = Double.parseDouble(price.getText().trim());
+            double hourlyPrice = Double.parseDouble(price.getText().trim());
 
             Vehicle vehicle = new Vehicle(
-                    registration, vehicleModel, vehicleCategory, dailyPrice);
+                    registration, vehicleModel, vehicleCategory, hourlyPrice);
 
             if (service.addVehicle(vehicle)) {
                 message("Vehicle added successfully.");
@@ -116,7 +115,7 @@ public class VehiclePanel extends JPanel {
                 message("Vehicle could not be added.");
             }
         } catch (NumberFormatException ex) {
-            message("Enter a valid daily price.");
+            message("Enter a valid hourly price.");
         } catch (SQLException | IllegalArgumentException ex) {
             error(ex);
         }
@@ -151,7 +150,7 @@ public class VehiclePanel extends JPanel {
             tableModel.addRow(new Object[]{
                     v.getVehicleId(), v.getRegistrationNo(),
                     v.getModel(), v.getCategory(),
-                    v.getPricePerDay(), v.getStatus()
+                    String.format("%.2f", v.getPricePerHour()), v.getStatus()
             });
         }
     }
@@ -170,7 +169,7 @@ public class VehiclePanel extends JPanel {
         if (id < 0) return;
 
         String value = JOptionPane.showInputDialog(
-                this, "Enter the new daily price:");
+                this, "Enter the new hourly price (₹):");
         if (value == null) return;
 
         try {

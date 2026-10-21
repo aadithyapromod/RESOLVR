@@ -16,7 +16,7 @@ public class VehicleDAO {
 
         String sql = """
             INSERT INTO vehicles
-            (registration_no, model, category, price_per_day, status)
+            (registration_no, model, category, price_per_hour, status)
             VALUES (?, ?, ?, ?, ?)
             """;
 
@@ -26,7 +26,7 @@ public class VehicleDAO {
             ps.setString(1, vehicle.getRegistrationNo());
             ps.setString(2, vehicle.getModel());
             ps.setString(3, vehicle.getCategory());
-            ps.setDouble(4, vehicle.getPricePerDay());
+            ps.setDouble(4, vehicle.getPricePerHour());
             ps.setString(5, vehicle.getStatus());
 
             return ps.executeUpdate() > 0;
@@ -37,7 +37,7 @@ public class VehicleDAO {
     public List<Vehicle> getAllVehicles() throws SQLException {
 
         List<Vehicle> vehicles = new ArrayList<>();
-        String sql = "SELECT * FROM vehicles";
+        String sql = "SELECT vehicle_id, registration_no, model, category, price_per_hour, status FROM vehicles";
 
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
@@ -49,7 +49,7 @@ public class VehicleDAO {
                     rs.getString("registration_no"),
                     rs.getString("model"),
                     rs.getString("category"),
-                    rs.getDouble("price_per_day"),
+                    rs.getDouble("price_per_hour"),
                     rs.getString("status")
                 );
 
@@ -60,12 +60,64 @@ public class VehicleDAO {
         return vehicles;
     }
 
-    // Update a vehicle's daily rental price
+    // Retrieve vehicle by ID
+    public Vehicle getVehicleById(int vehicleId) throws SQLException {
+        String sql = "SELECT vehicle_id, registration_no, model, category, price_per_hour, status FROM vehicles WHERE vehicle_id = ?";
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, vehicleId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new Vehicle(
+                        rs.getInt("vehicle_id"),
+                        rs.getString("registration_no"),
+                        rs.getString("model"),
+                        rs.getString("category"),
+                        rs.getDouble("price_per_hour"),
+                        rs.getString("status")
+                    );
+                }
+            }
+        }
+
+        return null;
+    }
+
+    // Retrieve only available vehicles
+    public List<Vehicle> getAvailableVehicles() throws SQLException {
+        List<Vehicle> vehicles = new ArrayList<>();
+        String sql = "SELECT vehicle_id, registration_no, model, category, price_per_hour, status FROM vehicles WHERE status = 'AVAILABLE'";
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Vehicle vehicle = new Vehicle(
+                    rs.getInt("vehicle_id"),
+                    rs.getString("registration_no"),
+                    rs.getString("model"),
+                    rs.getString("category"),
+                    rs.getDouble("price_per_hour"),
+                    rs.getString("status")
+                );
+
+                vehicles.add(vehicle);
+            }
+        }
+
+        return vehicles;
+    }
+
+    // Update a vehicle's hourly rental price
     public boolean updatePrice(int vehicleId, double newPrice)
             throws SQLException {
 
         String sql =
-            "UPDATE vehicles SET price_per_day = ? WHERE vehicle_id = ?";
+            "UPDATE vehicles SET price_per_hour = ? WHERE vehicle_id = ?";
 
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -83,7 +135,7 @@ public class VehicleDAO {
 
         List<Vehicle> vehicles = new ArrayList<>();
 
-        String sql = "SELECT * FROM vehicles WHERE category = ?";
+        String sql = "SELECT vehicle_id, registration_no, model, category, price_per_hour, status FROM vehicles WHERE category = ?";
 
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -97,7 +149,7 @@ public class VehicleDAO {
                         rs.getString("registration_no"),
                         rs.getString("model"),
                         rs.getString("category"),
-                        rs.getDouble("price_per_day"),
+                        rs.getDouble("price_per_hour"),
                         rs.getString("status")
                     ));
                 }

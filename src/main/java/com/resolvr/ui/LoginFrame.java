@@ -1,4 +1,3 @@
-
 package com.resolvr.ui;
 
 import javax.swing.*;
@@ -15,9 +14,9 @@ public class LoginFrame extends JFrame {
     private static final String DEMO_PASSWORD = "admin123";
 
     public LoginFrame() {
-        setTitle("RESOLVR - Login");
+        setTitle("RESOLVR - Staff Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(460, 390);
+        setSize(460, 440);
         setResizable(false);
         setLocationRelativeTo(null);
 
@@ -46,7 +45,7 @@ public class LoginFrame extends JFrame {
         card.add(title, gbc);
 
         gbc.gridy++;
-        JLabel subtitle = new JLabel("Rental Car Management");
+        JLabel subtitle = new JLabel("Staff Management Portal");
         subtitle.setHorizontalAlignment(SwingConstants.CENTER);
         subtitle.setForeground(Color.GRAY);
         card.add(subtitle, gbc);
@@ -69,7 +68,7 @@ public class LoginFrame extends JFrame {
         gbc.gridx = 0;
         gbc.gridwidth = 2;
 
-        JButton login = new JButton("Login");
+        JButton login = new JButton("Staff Login");
         login.setFont(new Font("SansSerif", Font.BOLD, 15));
         login.setBackground(new Color(39, 85, 145));
         login.setForeground(Color.WHITE);
@@ -77,10 +76,24 @@ public class LoginFrame extends JFrame {
         card.add(login, gbc);
 
         gbc.gridy++;
-        JLabel note = new JLabel("Demo login only");
+        JLabel note = new JLabel("Demo credentials: admin / admin123");
         note.setHorizontalAlignment(SwingConstants.CENTER);
+        note.setFont(new Font("SansSerif", Font.PLAIN, 11));
         note.setForeground(Color.GRAY);
         card.add(note, gbc);
+
+        gbc.gridy++;
+        JButton customerPortalBtn = new JButton("Looking to rent? Go to Customer Portal →");
+        customerPortalBtn.setFont(new Font("SansSerif", Font.BOLD, 12));
+        customerPortalBtn.setForeground(new Color(39, 85, 145));
+        customerPortalBtn.setContentAreaFilled(false);
+        customerPortalBtn.setBorderPainted(false);
+        customerPortalBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        customerPortalBtn.addActionListener(e -> {
+            dispose();
+            new CustomerLoginFrame().setVisible(true);
+        });
+        card.add(customerPortalBtn, gbc);
 
         background.add(card);
         add(background);

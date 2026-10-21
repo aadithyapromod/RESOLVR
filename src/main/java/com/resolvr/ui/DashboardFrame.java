@@ -1,4 +1,3 @@
-
 package com.resolvr.ui;
 
 import javax.swing.*;
@@ -44,6 +43,7 @@ public class DashboardFrame extends JFrame {
         tabs.addTab("Customers", new CustomerPanel());
         tabs.addTab("Rentals", new RentalPanel());
         tabs.addTab("Payments", new PaymentPanel());
+        tabs.addTab("Returns", new ReturnPanel());
 
         setLayout(new BorderLayout());
         add(header, BorderLayout.NORTH);

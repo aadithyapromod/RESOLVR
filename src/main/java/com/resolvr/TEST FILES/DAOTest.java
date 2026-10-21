@@ -39,7 +39,7 @@ public class DAOTest {
                     + " | Registration: " + vehicle.getRegistrationNo()
                     + " | Model: " + vehicle.getModel()
                     + " | Category: " + vehicle.getCategory()
-                    + " | Price/Day: " + vehicle.getPricePerDay()
+                    + " | Price/Hour: " + vehicle.getPricePerHour()
                     + " | Status: " + vehicle.getStatus()
                 );
             }

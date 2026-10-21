@@ -1,4 +1,3 @@
-
 package com.resolvr.dao;
 
 import com.resolvr.model.Payment;
@@ -34,7 +33,7 @@ public class PaymentDAO {
         List<Payment> payments = new ArrayList<>();
 
         String sql = "SELECT payment_id, rental_id, amount, method, " +
-                "payment_status, transaction_date FROM payments";
+                "payment_status, transaction_date FROM payments ORDER BY payment_id DESC";
 
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql);
@@ -65,12 +64,46 @@ public class PaymentDAO {
 
         String sql = "SELECT payment_id, rental_id, amount, method, " +
                 "payment_status, transaction_date FROM payments " +
-                "WHERE rental_id = ?";
+                "WHERE rental_id = ? ORDER BY payment_id DESC";
 
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setInt(1, rentalId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Payment payment = new Payment(
+                            resultSet.getInt("payment_id"),
+                            resultSet.getInt("rental_id"),
+                            resultSet.getDouble("amount"),
+                            resultSet.getString("method"),
+                            resultSet.getString("payment_status"),
+                            resultSet.getTimestamp("transaction_date")
+                    );
+
+                    payments.add(payment);
+                }
+            }
+        }
+
+        return payments;
+    }
+
+    // Retrieve payments for a particular customer
+    public List<Payment> getPaymentsByCustomerId(int customerId) throws SQLException {
+        List<Payment> payments = new ArrayList<>();
+
+        String sql = "SELECT p.payment_id, p.rental_id, p.amount, p.method, " +
+                     "p.payment_status, p.transaction_date " +
+                     "FROM payments p " +
+                     "INNER JOIN rentals r ON p.rental_id = r.rental_id " +
+                     "WHERE r.customer_id = ? ORDER BY p.payment_id DESC";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setInt(1, customerId);
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {

@@ -1,4 +1,3 @@
-
 package com.resolvr.service;
 
 import com.resolvr.dao.VehicleDAO;
@@ -28,10 +27,10 @@ public class VehicleService {
             );
         }
 
-        if (!Double.isFinite(vehicle.getPricePerDay())
-                || vehicle.getPricePerDay() <= 0) {
+        if (!Double.isFinite(vehicle.getPricePerHour())
+                || vehicle.getPricePerHour() <= 0) {
             throw new IllegalArgumentException(
-                    "Price per day must be a positive amount."
+                    "Price per hour must be a positive amount."
             );
         }
 
@@ -40,6 +39,17 @@ public class VehicleService {
 
     public List<Vehicle> getAllVehicles() throws SQLException {
         return vehicleDAO.getAllVehicles();
+    }
+
+    public Vehicle getVehicleById(int vehicleId) throws SQLException {
+        if (vehicleId <= 0) {
+            throw new IllegalArgumentException("Invalid vehicle ID.");
+        }
+        return vehicleDAO.getVehicleById(vehicleId);
+    }
+
+    public List<Vehicle> getAvailableVehicles() throws SQLException {
+        return vehicleDAO.getAvailableVehicles();
     }
 
     public List<Vehicle> searchByCategory(String category)

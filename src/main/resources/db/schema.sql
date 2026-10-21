@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS vehicles (
     registration_no VARCHAR(30) NOT NULL UNIQUE,
     model VARCHAR(100) NOT NULL,
     category VARCHAR(30) NOT NULL,
-    price_per_day DECIMAL(10,2) NOT NULL,
+    price_per_hour DECIMAL(10,2) NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'AVAILABLE'
 );
 

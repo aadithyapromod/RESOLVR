@@ -1,6 +1,5 @@
 package com.resolvr;
 
-
 import com.resolvr.dao.CustomerDAO;
 import com.resolvr.model.Customer;
 
@@ -11,19 +10,6 @@ public class CustomerDAOTest {
         CustomerDAO customerDAO = new CustomerDAO();
 
         try {
-            Customer customer = new Customer(
-                "Test Customer",
-                "9876543210",
-                "testcustomer@example.com",
-                "TESTLICENSE001"
-            );
-
-            boolean added = customerDAO.addCustomer(customer);
-
-            if (added) {
-                System.out.println("Customer added successfully!");
-            }
-
             System.out.println("\nCustomers in RESOLVR:");
 
             for (Customer c : customerDAO.getAllCustomers()) {

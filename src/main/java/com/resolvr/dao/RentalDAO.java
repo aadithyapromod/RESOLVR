@@ -1,4 +1,3 @@
-
 package com.resolvr.dao;
 
 import com.resolvr.model.Rental;
@@ -7,7 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Date;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +22,7 @@ public class RentalDAO {
         try (Connection connection =
                     DatabaseConnection.getConnection();
              PreparedStatement statement =
-                    connection.prepareStatement(sql)) {
+                    connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             statement.setInt(1, rental.getCustomerId());
             statement.setInt(2, rental.getVehicleId());
@@ -32,7 +31,16 @@ public class RentalDAO {
             statement.setDouble(5, rental.getTotalAmount());
             statement.setString(6, rental.getStatus());
 
-            return statement.executeUpdate() > 0;
+            int affected = statement.executeUpdate();
+            if (affected > 0) {
+                try (ResultSet keys = statement.getGeneratedKeys()) {
+                    if (keys.next()) {
+                        rental.setRentalId(keys.getInt(1));
+                    }
+                }
+                return true;
+            }
+            return false;
         }
     }
 
@@ -41,7 +49,7 @@ public class RentalDAO {
 
         List<Rental> rentals = new ArrayList<>();
 
-        String sql = "SELECT * FROM rentals";
+        String sql = "SELECT * FROM rentals ORDER BY rental_id DESC";
 
         try (Connection connection =
                     DatabaseConnection.getConnection();
@@ -97,6 +105,37 @@ public class RentalDAO {
         }
 
         return null;
+    }
+
+    // Retrieve rentals for a specific customer
+    public List<Rental> getRentalsByCustomerId(int customerId) throws SQLException {
+        List<Rental> rentals = new ArrayList<>();
+
+        String sql = "SELECT * FROM rentals WHERE customer_id = ? ORDER BY rental_id DESC";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setInt(1, customerId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Rental rental = new Rental(
+                        resultSet.getInt("rental_id"),
+                        resultSet.getInt("customer_id"),
+                        resultSet.getInt("vehicle_id"),
+                        resultSet.getDate("start_date"),
+                        resultSet.getDate("end_date"),
+                        resultSet.getDouble("total_amount"),
+                        resultSet.getString("status")
+                    );
+
+                    rentals.add(rental);
+                }
+            }
+        }
+
+        return rentals;
     }
 
     // Update rental status

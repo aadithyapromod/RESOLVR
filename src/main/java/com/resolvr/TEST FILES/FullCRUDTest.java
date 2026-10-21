@@ -66,7 +66,7 @@ public class FullCRUDTest {
 
             vehicleId = savedVehicle.getVehicleId();
 
-            check(savedVehicle.getPricePerDay() == 123.45,
+            check(savedVehicle.getPricePerHour() == 123.45,
                     "Read created vehicle");
 
             check(vehicleService.searchByCategory("Test")
@@ -79,7 +79,7 @@ public class FullCRUDTest {
 
             check(vehicleService.getAllVehicles().stream()
                             .anyMatch(v -> v.getVehicleId() == vehicleId
-                                    && v.getPricePerDay() == 150.00),
+                                    && v.getPricePerHour() == 150.00),
                     "Verify updated vehicle price");
 
             check(vehicleService.updateStatus(vehicleId, "MAINTENANCE"),
@@ -154,8 +154,8 @@ public class FullCRUDTest {
 
             rentalId = savedRental.getRentalId();
 
-            check(savedRental.getTotalAmount() == 300.00,
-                    "Verify rental total: 2 days x Rs.150");
+            check(savedRental.getTotalAmount() == 7200.00,
+                    "Verify rental total: 48 hours (2 days) x Rs.150/hr");
 
             check("BOOKED".equalsIgnoreCase(savedRental.getStatus()),
                     "Verify initial rental status");

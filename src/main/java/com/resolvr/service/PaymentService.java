@@ -1,4 +1,3 @@
-
 package com.resolvr.service;
 
 import com.resolvr.dao.PaymentDAO;
@@ -85,6 +84,17 @@ public class PaymentService {
         }
 
         return paymentDAO.getPaymentsByRentalId(rentalId);
+    }
+
+    // Retrieve payments for a particular customer
+    public List<Payment> getPaymentsByCustomerId(int customerId)
+            throws SQLException {
+
+        if (customerId <= 0) {
+            throw new IllegalArgumentException("Invalid customer ID.");
+        }
+
+        return paymentDAO.getPaymentsByCustomerId(customerId);
     }
 
     // Update payment status

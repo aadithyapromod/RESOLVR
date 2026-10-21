@@ -1,28 +1,29 @@
 package com.resolvr.model;
+
 public class Vehicle {
 
     private int vehicleId;
     private String registrationNo;
     private String model;
     private String category;
-    private double pricePerDay;
+    private double pricePerHour;
     private String status;
 
     public Vehicle(int vehicleId, String registrationNo,
                    String model, String category,
-                   double pricePerDay, String status) {
+                   double pricePerHour, String status) {
         this.vehicleId = vehicleId;
         this.registrationNo = registrationNo;
         this.model = model;
         this.category = category;
-        this.pricePerDay = pricePerDay;
+        this.pricePerHour = pricePerHour;
         this.status = status;
     }
 
     public Vehicle(String registrationNo, String model,
-                   String category, double pricePerDay) {
+                   String category, double pricePerHour) {
         this(0, registrationNo, model, category,
-             pricePerDay, "AVAILABLE");
+             pricePerHour, "AVAILABLE");
     }
 
     public int getVehicleId() {
@@ -41,8 +42,12 @@ public class Vehicle {
         return category;
     }
 
+    public double getPricePerHour() {
+        return pricePerHour;
+    }
+
     public double getPricePerDay() {
-        return pricePerDay;
+        return pricePerHour;
     }
 
     public String getStatus() {
@@ -61,8 +66,12 @@ public class Vehicle {
         this.category = category;
     }
 
+    public void setPricePerHour(double pricePerHour) {
+        this.pricePerHour = pricePerHour;
+    }
+
     public void setPricePerDay(double pricePerDay) {
-        this.pricePerDay = pricePerDay;
+        this.pricePerHour = pricePerDay;
     }
 
     public void setStatus(String status) {

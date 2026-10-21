@@ -1,4 +1,3 @@
-
 package com.resolvr.service;
 
 import com.resolvr.dao.CustomerDAO;
@@ -46,6 +45,12 @@ public class CustomerService {
             );
         }
 
+        // Check if driving license is already registered
+        Customer existingByLic = customerDAO.getCustomerByLicense(customer.getLicenseNo().trim());
+        if (existingByLic != null) {
+            throw new IllegalArgumentException("A customer with this licence number already exists.");
+        }
+
         return customerDAO.addCustomer(customer);
     }
 
@@ -61,6 +66,52 @@ public class CustomerService {
         }
 
         return customerDAO.getCustomerById(customerId);
+    }
+
+    // Search by driving license
+    public Customer getCustomerByLicense(String licenseNo) throws SQLException {
+        if (isBlank(licenseNo)) {
+            return null;
+        }
+        return customerDAO.getCustomerByLicense(licenseNo.trim());
+    }
+
+    // Search by email
+    public Customer getCustomerByEmail(String email) throws SQLException {
+        if (isBlank(email)) {
+            return null;
+        }
+        return customerDAO.getCustomerByEmail(email.trim());
+    }
+
+    // Find customer for customer portal login (accepts ID, licence, email, or phone)
+    public Customer findCustomerByLogin(String loginInput) throws SQLException {
+        if (isBlank(loginInput)) {
+            return null;
+        }
+
+        String query = loginInput.trim();
+
+        // 1. Try customer ID if integer
+        if (query.matches("^\\d+$")) {
+            try {
+                int id = Integer.parseInt(query);
+                Customer c = customerDAO.getCustomerById(id);
+                if (c != null) return c;
+            } catch (NumberFormatException ignored) {}
+        }
+
+        // 2. Try license number
+        Customer c = customerDAO.getCustomerByLicense(query);
+        if (c != null) return c;
+
+        // 3. Try email
+        c = customerDAO.getCustomerByEmail(query);
+        if (c != null) return c;
+
+        // 4. Try phone
+        c = customerDAO.getCustomerByPhone(query);
+        return c;
     }
 
     // Update customer details

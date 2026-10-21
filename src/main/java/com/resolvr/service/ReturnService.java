@@ -1,8 +1,8 @@
-
 package com.resolvr.service;
 
 import com.resolvr.dao.RentalDAO;
 import com.resolvr.dao.ReturnDAO;
+import com.resolvr.dao.VehicleDAO;
 import com.resolvr.model.Rental;
 import com.resolvr.model.VehicleReturn;
 
@@ -13,10 +13,12 @@ public class ReturnService {
 
     private final ReturnDAO returnDAO;
     private final RentalDAO rentalDAO;
+    private final VehicleDAO vehicleDAO;
 
     public ReturnService() {
         this.returnDAO = new ReturnDAO();
         this.rentalDAO = new RentalDAO();
+        this.vehicleDAO = new VehicleDAO();
     }
 
     // Record a vehicle return
@@ -75,6 +77,25 @@ public class ReturnService {
         return returnDAO.addReturn(vehicleReturn);
     }
 
+    // Complete return workflow: adds return record, completes rental, frees vehicle
+    public boolean processReturn(VehicleReturn vehicleReturn) throws SQLException {
+        if (vehicleReturn == null) {
+            throw new IllegalArgumentException("Return record cannot be null.");
+        }
+
+        Rental rental = rentalDAO.getRentalById(vehicleReturn.getRentalId());
+        if (rental == null) {
+            throw new IllegalArgumentException("The specified rental does not exist.");
+        }
+
+        boolean success = addReturn(vehicleReturn);
+        if (success) {
+            rentalDAO.updateRentalStatus(rental.getRentalId(), "COMPLETED");
+            vehicleDAO.updateStatus(rental.getVehicleId(), "AVAILABLE");
+        }
+        return success;
+    }
+
     // Retrieve all return records
     public List<VehicleReturn> getAllReturns() throws SQLException {
         return returnDAO.getAllReturns();
@@ -91,5 +112,21 @@ public class ReturnService {
         }
 
         return returnDAO.getReturnByRentalId(rentalId);
+    }
+
+    // Retrieve return records for a customer
+    public List<VehicleReturn> getReturnsByCustomerId(int customerId) throws SQLException {
+        if (customerId <= 0) {
+            throw new IllegalArgumentException("Invalid customer ID.");
+        }
+        return returnDAO.getReturnsByCustomerId(customerId);
+    }
+
+    // Retrieve a return record by return ID
+    public VehicleReturn getReturnById(int returnId) throws SQLException {
+        if (returnId <= 0) {
+            throw new IllegalArgumentException("Invalid return ID.");
+        }
+        return returnDAO.getReturnById(returnId);
     }
 }

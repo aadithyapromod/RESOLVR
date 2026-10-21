@@ -1,4 +1,3 @@
-
 package com.resolvr.service;
 
 import com.resolvr.dao.CustomerDAO;
@@ -64,16 +63,7 @@ public class RentalService {
         }
 
         // Find the requested vehicle
-        Vehicle selectedVehicle = null;
-
-        List<Vehicle> vehicles = vehicleDAO.getAllVehicles();
-
-        for (Vehicle vehicle : vehicles) {
-            if (vehicle.getVehicleId() == rental.getVehicleId()) {
-                selectedVehicle = vehicle;
-                break;
-            }
-        }
+        Vehicle selectedVehicle = vehicleDAO.getVehicleById(rental.getVehicleId());
 
         if (selectedVehicle == null) {
             throw new IllegalArgumentException(
@@ -118,24 +108,26 @@ public class RentalService {
             }
         }
 
-        // Calculate the rental cost
-        long days = ChronoUnit.DAYS.between(
-                rental.getStartDate().toLocalDate(),
-                rental.getEndDate().toLocalDate()
-        );
+        // Calculate the rental cost if not already specified
+        if (rental.getTotalAmount() <= 0) {
+            long days = ChronoUnit.DAYS.between(
+                    rental.getStartDate().toLocalDate(),
+                    rental.getEndDate().toLocalDate()
+            );
 
-        // Charge at least one day's rental
-        days = Math.max(days, 1);
+            long hours = days <= 0 ? 1 : days * 24;
+            double totalAmount = hours * selectedVehicle.getPricePerHour();
+            rental.setTotalAmount(totalAmount);
+        }
 
-        double totalAmount =
-                days * selectedVehicle.getPricePerDay();
-
-        rental.setTotalAmount(totalAmount);
-
-        // New bookings start as BOOKED
         rental.setStatus("BOOKED");
 
-        return rentalDAO.addRental(rental);
+        boolean success = rentalDAO.addRental(rental);
+        if (success) {
+            // Update vehicle status so it reflects as rented
+            vehicleDAO.updateStatus(selectedVehicle.getVehicleId(), "RENTED");
+        }
+        return success;
     }
 
     // Retrieve all rentals
@@ -153,6 +145,16 @@ public class RentalService {
         }
 
         return rentalDAO.getRentalById(rentalId);
+    }
+
+    // Retrieve rentals for a customer
+    public List<Rental> getRentalsByCustomerId(int customerId) throws SQLException {
+        if (customerId <= 0) {
+            throw new IllegalArgumentException(
+                    "Invalid customer ID."
+            );
+        }
+        return rentalDAO.getRentalsByCustomerId(customerId);
     }
 
     // Update rental status
@@ -175,8 +177,18 @@ public class RentalService {
             );
         }
 
-        return rentalDAO.updateRentalStatus(
+        boolean success = rentalDAO.updateRentalStatus(
                 rentalId, status.toUpperCase()
         );
+
+        if (success && (status.equalsIgnoreCase("CANCELLED")
+                || status.equalsIgnoreCase("COMPLETED"))) {
+            Rental r = rentalDAO.getRentalById(rentalId);
+            if (r != null) {
+                vehicleDAO.updateStatus(r.getVehicleId(), "AVAILABLE");
+            }
+        }
+
+        return success;
     }
 }
