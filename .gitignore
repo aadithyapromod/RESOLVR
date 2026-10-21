@@ -4,3 +4,5 @@
 .env
 config.properties
 db.properties
+out/
+java-files.txt

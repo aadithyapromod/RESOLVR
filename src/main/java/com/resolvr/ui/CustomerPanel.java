@@ -1,4 +1,3 @@
-
 package com.resolvr.ui;
 
 import com.resolvr.model.Customer;
